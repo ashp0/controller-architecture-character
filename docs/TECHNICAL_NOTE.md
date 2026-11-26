@@ -108,6 +108,11 @@ which is the character's doctrine of pacification in musical form.
 * **Simulation as a kinematic controller plus a browser viewer** rather than a
   physics engine. Character motion needs limits, velocity and acceleration
   realism, not contact dynamics. That costs ~5% of one core instead of a GPU.
+* **Model output is untrusted input.** Gestures, lights and sounds are checked
+  against closed vocabularies. Boxes are normalized (in a live run the model
+  answered once on a 0–1000 grid instead of 0–1; that case is now detected and
+  tested). Network errors retry with backoff, after intermittent DNS failures
+  on a campus network cost whole turns in one recorded run.
 * **Half-duplex audio.** The microphone is muted while the lamp speaks (plus a
   0.35 s tail), so laptop speakers cannot trigger it. Barge-in is not supported.
 
@@ -166,6 +171,7 @@ look away when the screen turns red; 8 s phases):
 | 1, initial thresholds (10 trials) | 10/10 | 3/10 | 1.0 s / 6.0 s | not recorded |
 | 2, initial thresholds (12 trials) | 12/12 | 5/12 (turn L/R 5/6, phone 0/3, up 0/3) | 1.1 s / 4.2 s | 1 |
 | 2 replayed with tuned thresholds | 12/12 | 10/12 (turn 6/6, phone 3/3, up 1/3) | n/a | 0 |
+| 3, **live** with tuned thresholds (12 trials) | 12/12 | 6/12 (turn 6/6, phone 0/3, up 0/3) | 1.1 s / 3.5 s | 1 |
 
 Run 2 recorded every detector sample. Looking at the screen kept |yaw| below 0.12
 (p90) and pitch within 0.53–0.57; looking down at a phone pushed pitch to about
@@ -174,6 +180,14 @@ release to 2.0 s was chosen from these samples. Glancing *up* over the screen
 moves the eyes more than the head, so a head-pose detector mostly misses it.
 Eye tracking (for example iris landmarks) would be the fix. The tuned values
 come from one person and one seat; re-run the protocol on the demo machine.
+
+Run 3 is the honest test of that tuning, and it did not hold for the phone. In
+run 2 the head tilted down to the phone (pitch ≈ 0.67); in run 3 the eyes did the
+work (pitch 0.54 against 0.52 when looking at the screen), which is inside any
+band that still accepts looking at the screen. **Head turns are handled
+reliably (12/12 across runs 2–3); eyes-only glances away are not.** The fix is
+gaze from eye landmarks, which YuNet's five points cannot provide. This is the
+most important limitation of the engagement component.
 
 ## 7. Known limitations and what I left out
 

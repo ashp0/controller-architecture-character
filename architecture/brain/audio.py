@@ -25,8 +25,17 @@ class _Voice:
 
 
 class Mixer:
-    def __init__(self, sounds: dict[str, np.ndarray], device=None, enabled: bool = True):
+    def __init__(self, sounds: dict[str, np.ndarray], device=None, enabled: bool = True, tap: str | None = None):
         self.sounds = sounds
+        # Optional tap: everything the character makes audible, written to a WAV (demo videos).
+        self.tap = None
+        if tap:
+            import soundfile as sf
+
+            self.tap = sf.SoundFile(tap, "w", samplerate=SR, channels=1, subtype="PCM_16")
+            self.tap_started = time.time()
+            with open(tap + ".start", "w") as f:
+                f.write(repr(self.tap_started))
         self.lock = threading.Lock()
         self.music: list[dict] = []  # {"x", "pos", "gain", "target", "rate"}
         self.sfx: list[list] = []  # [x, pos, gain]
@@ -126,12 +135,19 @@ class Mixer:
                     self.last_voice_end = time.monotonic()
                     v.loop.call_soon_threadsafe(lambda f=v.done: f.done() or f.set_result(True))
             self.voice_level = level
-        return np.tanh(out * self.master)
+        out = np.tanh(out * self.master)
+        if self.tap is not None:
+            self.tap.write(out)
+            self.tap.flush()
+        return out
 
     def _callback(self, outdata, frames, _time, _status) -> None:
         outdata[:, 0] = self._mix(frames)
 
     def _null_clock(self) -> None:
+        # Paced against the wall clock so a silent run (and its audio tap) stays in real time.
+        t0, n = time.monotonic(), 0
         while True:
             self._mix(1024)
-            time.sleep(1024 / SR)
+            n += 1
+            time.sleep(max(0.0, t0 + n * 1024 / SR - time.monotonic()))

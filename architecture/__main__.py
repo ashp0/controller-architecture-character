@@ -42,6 +42,7 @@ def main() -> None:
     p.add_argument("--keep-memory", action="store_true", help="load the Ledger from the previous run")
     p.add_argument("--allow-camera-switch", action="store_true",
                    help="let a viewer swap the camera for a local video file (used by scripts/record_demo.py)")
+    p.add_argument("--record-audio", default=None, help="also write all character audio to this WAV file")
     p.add_argument("--host", default="127.0.0.1")
     p.add_argument("--port", type=int, default=8765)
     p.add_argument("--no-browser", action="store_true", help="don't open the viewer automatically")
@@ -64,7 +65,14 @@ def main() -> None:
         logging.getLogger(noisy).setLevel(logging.WARNING)
 
     body = None
+    # A stop signal must also stop the body process, or it lingers holding the port.
+    import signal
+
+    signal.signal(signal.SIGTERM, lambda *_: (_ for _ in ()).throw(KeyboardInterrupt()))
     if not a.brain_only:
+        with socket.socket() as s:
+            if s.connect_ex((a.host, a.port)) == 0:
+                sys.exit(f"port {a.port} is already in use (another copy running?). Stop it or use --port.")
         body = subprocess.Popen([sys.executable, "-m", "architecture.body.server", "--host", a.host, "--port", str(a.port)],
                                 cwd=ROOT)
         if not _wait_port(a.host, a.port):

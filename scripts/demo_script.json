@@ -1,25 +1,128 @@
 {
-  "about": "Scenes for scripts/record_demo.py. Each step: camera (clip file in the clips folder), say (typed to the character), await (an event), shot (screenshot name), caption. {object} is replaced by --object.",
+  "about": "Scenes for scripts/record_demo.py. Each step: camera (clip file in the clips folder), say (typed to the character), await (an event), shot (screenshot name), caption. {object} is replaced by --object. {target} is replaced by --target (a goal target that stays in view).",
   "steps": [
-    {"camera": "BLACK", "await": "mode:DORMANT", "delay": 4, "shot": "01-dormant", "caption": "Nobody there. The lamp sleeps on its pyramid, glowing like an ember, while a low drone plays."},
-    {"camera": "1-look.mov", "await": "mode:ENGAGED", "delay": 1.6, "shot": "02-awakening", "caption": "Engagement: a face turns toward it. The lamp rises, the light warms to gold, a swell and bell sound, the lullaby theme begins."},
-    {"await": "subtitle", "shot": "03-greeting", "caption": "Character response: the greeting (stock line, no network round-trip)."},
-    {"await": "mode:LISTENING"},
-    {"camera": "2-away.mov", "await": "event:disengaged", "delay": 1.0, "shot": "04-disengage", "caption": "Attention moves to a phone. After 2 s it bows, dims, and lets the visitor go."},
-    {"await": "subtitle", "shot": "05-farewell", "caption": "The farewell."},
-    {"camera": "1-look.mov", "await": "subtitle", "shot": "06-welcome-back", "caption": "The visitor looks back: a shorter re-greeting with a chime and a nod."},
-    {"await": "mode:LISTENING"},
-    {"say": "Who are you?", "await": "reply", "shot": "07-who-are-you", "caption": "Spoken interaction (typed here; speech goes through the same path after local speech recognition)."},
-    {"say": "Why does nobody talk about trees anymore?", "await": "reply", "shot": "08-trees"},
-    {"await": "breakthrough", "optional": true, "timeout": 12, "shot": "08b-breakthrough", "caption": "The second voice breaks through."},
-    {"camera": "3-mug.mov", "delay": 2, "say": "What do you make of this?", "await": "reply", "shot": "09-object", "caption": "Scene memory: it looks at the {object}, comments in character, and writes it into the Ledger (right panel)."},
-    {"camera": "5-phone.mov", "delay": 2, "say": "Honestly, I spend most of my day on this.", "await": "reply", "shot": "10-phone"},
-    {"await": "breakthrough", "optional": true, "timeout": 12, "shot": "11-wake-up", "caption": "The second voice: red flash, recoil, glitch."},
-    {"camera": "4-desk.mov", "delay": 2, "say": "Shine your light on the {object} on my desk.", "await": "mode:ACTING", "delay2": 4.5, "shot": "12-goal-acting", "caption": "Goal-directed action: it plans, turns its head and narrows its beam onto the {object}, then re-observes with a fresh frame to verify (box and crosshair in the camera view)."},
-    {"await": "subtitle_after_goal", "optional": true, "timeout": 30, "shot": "13-goal-done", "caption": "Verified on target: a resolved bell and a closing line."},
-    {"await": "mode:LISTENING", "timeout": 30},
-    {"camera": "6-empty.mov", "delay": 2, "say": "What colour was the {object} I showed you earlier?", "await": "reply", "shot": "14-recall", "caption": "Recall: the {object} is no longer in view; the answer comes from the Ledger."},
-    {"camera": "7-leaf.mov", "optional_clip": true, "delay": 2, "say": "Look what I found outside today.", "await": "reply", "shot": "15-nature", "caption": "Shown something living, it is unsettled."},
-    {"camera": "1-look.mov", "say": "Goodbye.", "await": "reply", "shot": "16-goodbye"}
+    {
+      "camera": "BLACK",
+      "await": "mode:DORMANT",
+      "delay": 4,
+      "shot": "01-dormant",
+      "caption": "Nobody there. The lamp sleeps on its pyramid, glowing like an ember, while a low drone plays."
+    },
+    {
+      "camera": "1-look.mov",
+      "await": "mode:ENGAGED",
+      "delay": 1.6,
+      "shot": "02-awakening",
+      "caption": "Engagement: a face turns toward it. The lamp rises, the light warms to gold, a swell and bell sound, the lullaby theme begins."
+    },
+    {
+      "await": "subtitle",
+      "shot": "03-greeting",
+      "caption": "Character response: the greeting (stock line, no network round-trip)."
+    },
+    {
+      "await": "mode:LISTENING"
+    },
+    {
+      "camera": "2-away.mov",
+      "await": "event:disengaged",
+      "delay": 1.0,
+      "shot": "04-disengage",
+      "caption": "Attention moves elsewhere (the head turns away). After 2 s it bows, dims, says a farewell and lets the visitor go.",
+      "delay2": 3.5
+    },
+    {
+      "camera": "1-look.mov",
+      "await": "subtitle",
+      "shot": "06-welcome-back",
+      "caption": "The visitor looks back: a shorter re-greeting with a chime and a nod.",
+      "new": true
+    },
+    {
+      "await": "mode:LISTENING"
+    },
+    {
+      "say": "Who are you?",
+      "await": "reply",
+      "shot": "07-who-are-you",
+      "caption": "Spoken interaction (typed here; speech goes through the same path after local speech recognition)."
+    },
+    {
+      "say": "Why does nobody talk about trees anymore?",
+      "await": "reply",
+      "shot": "08-trees"
+    },
+    {
+      "await": "breakthrough",
+      "optional": true,
+      "timeout": 12,
+      "shot": "08b-breakthrough",
+      "caption": "The second voice breaks through."
+    },
+    {
+      "camera": "3-mug.mov",
+      "delay": 2,
+      "say": "What do you make of this?",
+      "await": "reply",
+      "shot": "09-object",
+      "caption": "Scene memory: it looks at the {object}, comments in character, and writes it into the Ledger (right panel)."
+    },
+    {
+      "camera": "5-phone.mov",
+      "delay": 2,
+      "say": "Honestly, I spend most of my day on this.",
+      "await": "reply",
+      "shot": "10-phone"
+    },
+    {
+      "await": "breakthrough",
+      "optional": true,
+      "timeout": 12,
+      "shot": "11-wake-up",
+      "caption": "The second voice: red flash, recoil, glitch."
+    },
+    {
+      "camera": "6-empty.mov",
+      "delay": 2,
+      "say": "Shine your light on the {target}.",
+      "await": "mode:ACTING",
+      "delay2": 4.5,
+      "shot": "12-goal-acting",
+      "caption": "Goal-directed action: from the live frame and the request it plans an aim, turns its head and narrows its beam, then re-observes with a fresh frame to verify (box and crosshair in the camera view, right)."
+    },
+    {
+      "await": "subtitle_after_goal",
+      "optional": true,
+      "timeout": 30,
+      "shot": "13-goal-done",
+      "caption": "Verified on target: a resolved bell and a closing line."
+    },
+    {
+      "await": "mode:LISTENING",
+      "timeout": 30
+    },
+    {
+      "camera": "6-empty.mov",
+      "delay": 2,
+      "say": "What did the {object} I showed you earlier look like?",
+      "await": "reply",
+      "shot": "14-recall",
+      "caption": "Recall: the {object} is no longer in view; the answer comes from the Ledger."
+    },
+    {
+      "camera": "7-leaf.mov",
+      "optional_clip": true,
+      "delay": 2,
+      "say": "Look what I found outside today.",
+      "await": "reply",
+      "shot": "15-nature",
+      "caption": "Shown something living, it is unsettled."
+    },
+    {
+      "camera": "1-look.mov",
+      "say": "Goodbye.",
+      "await": "reply",
+      "shot": "16-goodbye"
+    }
   ]
 }

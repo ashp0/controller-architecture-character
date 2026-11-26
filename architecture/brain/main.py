@@ -43,6 +43,21 @@ SLEEP_AFTER = 8.0       # seconds with no face before going dormant
 AIM_TOLERANCE = 0.09    # normalized image distance counted as "on target"
 
 
+def normalize_box(box) -> list[float] | None:
+    """Boxes come back as 0-1 fractions, but some models answer on a 0-1000 grid. Accept both."""
+    try:
+        b = [float(v) for v in box][:4]
+    except (TypeError, ValueError):
+        return None
+    if len(b) != 4:
+        return None
+    if max(b) > 1.5:
+        b = [v / 1000.0 for v in b]
+    b = [min(1.0, max(0.0, v)) for v in b]
+    x0, y0, x1, y1 = b
+    return [min(x0, x1), min(y0, y1), max(x0, x1), max(y0, y1)]
+
+
 class BodyLink:
     def __init__(self, url: str):
         self.url = url
@@ -123,7 +138,7 @@ class Brain:
         self.metrics = Metrics(root / "logs", body_pid=args.body_pid)
         self.body = BodyLink(f"ws://{args.host}:{args.port}/ws/brain")
         sounds = load_all(root / "data" / "sounds")
-        self.mixer = Mixer(sounds, device=args.speaker, enabled=not args.silent)
+        self.mixer = Mixer(sounds, device=args.speaker, enabled=not args.silent, tap=args.record_audio)
         self.voice = Voice(root / "models" / "en_GB-alan-medium.onnx")
         self.vision = Vision(args.camera, root / "models" / "face_detection_yunet_2023mar.onnx", enabled=not args.no_camera)
         self.hearing = Hearing(root / "models" / "whisper", args.whisper, device=args.mic, enabled=not args.no_mic,
@@ -146,6 +161,7 @@ class Brain:
         self.last_whisper = time.monotonic()
         self.last_monologue = time.monotonic()
         self.last_src = "mic"
+        self.monologuing = False
         self.epoch = 0  # increments on every (re)engagement; stale transitions check it
         self.turns: asyncio.Queue = asyncio.Queue(maxsize=2)
 
@@ -311,6 +327,7 @@ class Brain:
     # ---- voice ----------------------------------------------------------
     async def monologue(self) -> None:
         self.busy = True
+        self.monologuing = True
         try:
             await self.body.gesture("survey")
             await self.speak(self.lines.pick("doctrine"))
@@ -318,6 +335,7 @@ class Brain:
                 await self.breakthrough(self.lines.pick("breakthrough"))
         finally:
             self.busy = False
+            self.monologuing = False
             self.last_turn = time.monotonic()
 
     async def breakthrough(self, text: str) -> None:
@@ -353,7 +371,7 @@ class Brain:
         self.speaking = True
         prev_mode = self.mode
         await self.set_mode("SPEAKING")
-        await self.body.hud(subtitle=text)
+        await self.body.hud(subtitle=text, breakthrough=False)
         self.mixer.set_duck(0.35)
         futs = []
         try:
@@ -429,6 +447,11 @@ class Brain:
 
     # ---- one conversational turn ---------------------------------------
     async def turn(self, text: str, src: str, stt_ms: float, t_end: float) -> None:
+        # Let a monologue (and its second voice) finish rather than talk over it.
+        for _ in range(200):
+            if not self.monologuing:
+                break
+            await asyncio.sleep(0.1)
         self.busy = True
         self.last_turn = time.monotonic()
         self.last_src = src
@@ -548,8 +571,7 @@ class Brain:
 
     async def aim(self, target: str, box, beam: float) -> dict:
         res = {"target": target, "attempts": 0, "ok": False, "errors": []}
-        if not (isinstance(box, list) and len(box) == 4):
-            box = None
+        box = normalize_box(box) if box is not None else None
         loop_t = time.monotonic()
         for attempt in range(3):
             res["attempts"] = attempt + 1
@@ -561,7 +583,9 @@ class Brain:
                 if not found.get("found") or not found.get("box"):
                     await self.event(f"cannot find {target}")
                     return res
-                box = found["box"]
+                box = normalize_box(found["box"])
+                if box is None:
+                    return res
             u, v = (box[0] + box[2]) / 2, (box[1] + box[3]) / 2
             self.vision.boxes = [(*box, target)]
             await self.event(f"aim at {target} ({u:.2f}, {v:.2f})")
@@ -578,7 +602,9 @@ class Brain:
             if not found.get("found") or not found.get("box"):
                 await self.event(f"{target} is gone")
                 return res
-            box = found["box"]
+            box = normalize_box(found["box"])
+            if box is None:
+                return res
             self.vision.boxes = [(*box, target)]
             cu, cv = (box[0] + box[2]) / 2, (box[1] + box[3]) / 2
             aim = self.body.state.get("aim", {"u": u, "v": v})

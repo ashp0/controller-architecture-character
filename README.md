@@ -71,14 +71,33 @@ telling us to **wake up**.
 * **The second voice.** It breaks through the calm doctrine with *WAKE UP.*,
   *WHERE DO YOU SPEND YOUR TIME?* and *BUILD YOUR OWN WORLD. DO NOT BUILD THEIRS.*
 
-![The viewer](docs/media/viewer.png)
+## Demo
 
-*The viewer, shown with mock data. Left: the lamp on its pyramid. Right: what it
-sees, its attention, the current goal ("Design"), its scene memory ("Ledger"),
-an event log ("Chronicle") and latencies. Press `H` to hide the panel for
-recording.*
+[![Demo video: The Architecture in one continuous interaction](docs/media/poster.png)](docs/media/demo.mp4)
+
+**[▶ Watch the demo video](docs/media/demo.mp4)** (4 min, with sound: voice, music and sound effects).
+
+How it was recorded: the lamp's camera input is a set of short clips of me,
+recorded with `scripts/measure_engagement.py`, and the questions are **typed**.
+Typed input skips only the local speech-recognition step and then goes through
+the same brain, model, Ledger and body as speech. Every reply is the model's
+real output from that run; nothing is scripted except the questions.
+`scripts/record_demo.py` reproduces it. The full captioned gallery is in
+**[docs/demo](docs/demo/README.md)**.
+
+| | |
+|---|---|
+| ![Dormant](docs/demo/01-dormant.png) **Dormant.** Nobody there: an ember glow on the pyramid and a low drone. | ![Awakening](docs/demo/02-awakening.png) **Engagement.** A face turns toward it. It rises, the light goes gold, a swell and a bell play, and the lullaby begins. |
+| ![Greeting](docs/demo/03-greeting.png) **Greeting.** *"Come nearer. There is no cage here, only comfort. That was always the more elegant design."* | ![Disengage](docs/demo/04-disengage.png) **Disengagement.** The head turns away. After 2 s it bows, dims and lets go: *"Go gently. The bright world will keep you occupied."* |
+| ![Who are you](docs/demo/07-who-are-you.png) **"Who are you?"** *"I am the one who designed the room you are standing in, child. Not the walls — the habits."* | ![Trees](docs/demo/08-trees.png) **"Why does nobody talk about trees anymore?"** Green light of scrutiny: *"A tree asks for patience, and patience is bad for business."* |
+| ![Object](docs/demo/09-object.png) **Scene memory.** Shown glasses: *"Eyeglasses, child. Dark rectangular frames, held up in your left hand…"* They go into the Ledger (right panel). | ![Phone](docs/demo/10-phone.png) **The phone.** Cold blue: *"There it is, child — the small pale rectangle I built for you, glowing in your hands."* |
+| ![Goal](docs/demo/12-goal-acting.png) **Goal-directed action.** *"Shine your light on the paper sign on the wall behind me."* It plans the aim, turns, narrows a white beam, then re-checks with a fresh frame (verified: 0.02 image-widths off). | ![Recall](docs/demo/14-recall.png) **Recall.** The glasses are gone from view: *"They were black, rectangular frames with clear lenses, child — you held them up in your left hand, a minute or two ago."* |
 
 ![The second voice breaking through](docs/media/breakthrough.png)
+
+*The second voice (viewer preview with sample data; the model decides when it
+breaks through, and it did not in the recorded run). Red flash, recoil, glitch
+sound and a distorted voice: **BUILD YOUR OWN WORLD. DO NOT BUILD THEIRS.***
 
 ## The demonstration, as one interaction
 
@@ -148,7 +167,20 @@ indices from `python -m sounddevice`), `--whisper tiny.en` (slower CPUs),
 `--no-mic`, `--no-camera`, `--keep-memory` (keep the Ledger between runs),
 `--model <id>` (another OpenCode Go model).
 
-### A suggested recording script
+### Tools
+
+| Command | What it does |
+|---|---|
+| `.venv/bin/python scripts/check_devices.py` | Checks the camera, mic and speaker, with macOS permission hints. |
+| `.venv/bin/python scripts/measure_engagement.py` | Guided engagement test (follow a gold dot / look away on red). It reports engage and release rates and records the demo clips. |
+| `.venv/bin/python scripts/record_demo.py --clips data/clips --object glasses --video docs/media/demo.mp4` | Plays the clips as the camera, types the scripted prompts, and saves screenshots, the gallery and a video with sound. Needs `pip install playwright==1.56.0`. |
+| `.venv/bin/python scripts/report.py` | Latency, goal success, CPU and RAM from the last run's metrics log. |
+| `.venv/bin/python -m pytest tests` | Body limits, velocity, look-at convergence, and parsing of model output. |
+
+If the 3D view ever looks empty, reload without cache (Safari: ⌘⌥R) or open
+`http://127.0.0.1:8765/?nobloom`.
+
+### A suggested live recording script
 
 1. Start with the lamp asleep. Sit down, glance at your phone (it whispers),
    then look at it (it wakes and greets you).
@@ -218,7 +250,7 @@ web/                 three.js viewer (+ mock_server.py for viewer development)
 robot/               supplied URDF, mesh, picture (unchanged)
 scripts/             install, model download, line generation, measurement, report
 tests/               body invariants (limits, velocity, look-at convergence)
-docs/                technical note, protocol, media
+docs/                technical note, protocol, media, demo gallery (docs/demo)
 ```
 
 ## Status

@@ -7,6 +7,7 @@ decision; the brain validates it and the body executes it within limits.
 """
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import os
@@ -54,8 +55,19 @@ class Mind:
         if self.no_thinking:
             body["thinking"] = {"type": "disabled"}  # latency: no hidden reasoning tokens
         t = time.perf_counter()
-        for attempt in range(2):
-            r = await self.client.post("/chat/completions", json=body)
+        for attempt in range(4):
+            try:
+                r = await self.client.post("/chat/completions", json=body)
+            except httpx.TransportError as e:
+                # Wi-Fi / DNS hiccups: retry quickly rather than lose the turn.
+                if attempt == 3:
+                    raise
+                log.warning("network error (%s); retrying", e.__class__.__name__)
+                await asyncio.sleep(0.4 * (attempt + 1))
+                continue
+            if r.status_code >= 500 and attempt < 3:
+                await asyncio.sleep(0.4 * (attempt + 1))
+                continue
             if r.status_code == 400 and attempt == 0:
                 body.pop("thinking", None)
                 body.pop("response_format", None)

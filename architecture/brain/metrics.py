@@ -25,16 +25,20 @@ class Metrics:
         self.f.write(json.dumps({"t": round(time.time(), 3), "kind": kind, **fields}) + "\n")
 
     async def sampler(self, every: float = 5.0) -> None:
+        # Measurement must never take the character down: every psutil call is guarded.
         for p in self.procs.values():
-            p.cpu_percent(None)
+            try:
+                p.cpu_percent(None)
+            except Exception:
+                pass
         while True:
             await asyncio.sleep(every)
             row = {}
-            for name, p in self.procs.items():
+            for name, p in list(self.procs.items()):
                 try:
                     row[name] = {"cpu": p.cpu_percent(None), "rss_mb": round(p.memory_info().rss / 2**20, 1),
                                  "threads": p.num_threads()}
-                except psutil.Error:
-                    pass
+                except Exception:
+                    self.procs.pop(name, None)
             row["system_cpu"] = psutil.cpu_percent(None)
             self.log("resources", **row)

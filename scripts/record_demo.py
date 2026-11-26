@@ -78,11 +78,13 @@ async def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--clips", required=True, help="folder with 1-look.mov ... 6-empty.mov (any video/image extension)")
     ap.add_argument("--object", default="mug", help="what you hold up in 3-mug / leave on the desk in 4-desk")
+    ap.add_argument("--target", default="paper sign on the wall behind me", help="goal target that stays in view")
     ap.add_argument("--script", default=str(ROOT / "scripts" / "demo_script.json"))
     ap.add_argument("--out", default=str(ROOT / "docs" / "demo"))
     ap.add_argument("--port", type=int, default=8790)
     ap.add_argument("--size", default="1600x900")
     ap.add_argument("--sound", action="store_true", help="play audio (default: silent)")
+    ap.add_argument("--video", default=None, help="also save a screen recording with the character's audio (.mp4)")
     a = ap.parse_args()
 
     clips = Path(a.clips).expanduser()
@@ -105,6 +107,10 @@ async def main() -> None:
     first = clip(steps[0].get("camera", "BLACK")) or black
     cmd = [sys.executable, "-m", "architecture", "--no-browser", "--no-mic", "--allow-camera-switch",
            "--port", str(a.port), "--camera", str(first)] + ([] if a.sound else ["--silent"])
+    tmp = out / ".rec"
+    if a.video:
+        tmp.mkdir(exist_ok=True)
+        cmd += ["--record-audio", str(tmp / "audio.wav")]
     proc = subprocess.Popen(cmd, cwd=ROOT)
     try:
         for _ in range(200):
@@ -127,7 +133,13 @@ async def main() -> None:
                 if not exe:
                     sys.exit("No Chromium for screenshots: run  .venv/bin/python -m playwright install chromium")
                 browser = await pw.chromium.launch(executable_path=exe, args=args)
-            page = await browser.new_page(viewport={"width": w, "height": h}, device_scale_factor=1)
+            ctx_opts = {"viewport": {"width": w, "height": h}, "device_scale_factor": 1}
+            if a.video:
+                ctx_opts["record_video_dir"] = str(tmp)
+                ctx_opts["record_video_size"] = {"width": w, "height": h}
+            context = await browser.new_context(**ctx_opts)
+            video_started = time.time()
+            page = await context.new_page()
             await page.goto(f"http://127.0.0.1:{a.port}/")
             ws = await http.ws_connect(f"http://127.0.0.1:{a.port}/ws/viz")
             hud = Hud()
@@ -157,15 +169,19 @@ async def main() -> None:
                 await asyncio.sleep(st.get("delay", 0))
                 said = None
                 if "say" in st:
-                    said = st["say"].replace("{object}", a.object)
+                    said = st["say"].replace("{object}", a.object).replace("{target}", a.target)
                     sub_mark = len(hud.subtitles)
                     await ws.send_str(json.dumps({"type": "text", "text": said}))
                     print(f"> {said}")
                 kind = st.get("await")
                 timeout = st.get("timeout", 45)
                 ok = True
-                if kind == "subtitle":
-                    ok = await hud.wait(lambda: len(hud.subtitles) > sub_mark and not hud.subtitles[-1][2], timeout)
+                if kind == "subtitle" and st.get("new"):
+                    ok = await hud.wait(lambda: any(not b and t not in FILLERS for _, t, b in hud.subtitles[sub_mark:]), timeout)
+                elif kind == "subtitle":
+                    # A line that is on screen now (it may have started during the previous step) or a new one.
+                    ok = await hud.wait(lambda: bool(hud.state.get("subtitle")) and not hud.state.get("breakthrough")
+                                        and hud.state.get("subtitle") not in FILLERS, timeout)
                 elif kind == "reply":
                     # The main reply: the first real (non-filler, non-second-voice) line spoken after the prompt.
                     ok = await hud.wait(lambda: hud.state.get("mode") == "SPEAKING" and any(
@@ -188,13 +204,18 @@ async def main() -> None:
                 await asyncio.sleep(st.get("delay2", 1.3 if kind in ("reply", "subtitle", "subtitle_after_goal") else 0.4))
                 if "shot" in st:
                     path = out / f"{st['shot']}.png"
+                    on_screen = hud.state.get("subtitle") or ""
                     await page.screenshot(path=str(path))
-                    caption = st.get("caption", "").replace("{object}", a.object)
-                    sub = hud.state.get("subtitle") or (hud.subtitles[-1][1] if hud.subtitles else "")
+                    caption = st.get("caption", "").replace("{object}", a.object).replace("{target}", a.target)
+                    sub = on_screen  # only what is visible in the screenshot
                     gallery.append({"file": path.name, "said": said, "reply": sub, "caption": caption,
                                     "breakthrough": bool(hud.state.get("breakthrough"))})
                     print(f"  shot {path.name}: {sub[:90]}")
+            await asyncio.sleep(2)
+            await context.close()
             await browser.close()
+            if a.video:
+                mux(tmp, video_started, Path(a.video))
 
         md = ["# Demo screenshots", "",
               "Captured by `scripts/record_demo.py` from the running system. The camera is a set of short",
@@ -223,6 +244,27 @@ async def main() -> None:
         except subprocess.TimeoutExpired:
             proc.kill()
         black.unlink(missing_ok=True)
+
+
+def mux(tmp: Path, video_started: float, dest: Path) -> None:
+    """Combine the browser recording with the character's audio, aligned by wall clock."""
+    vids = sorted(tmp.glob("*.webm"))
+    wav = tmp / "audio.wav"
+    if not vids:
+        print("no video recorded")
+        return
+    offset = 0.0
+    if (tmp / "audio.wav.start").exists():
+        offset = float((tmp / "audio.wav.start").read_text()) - video_started  # >0: audio began after video
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    cmd = ["ffmpeg", "-loglevel", "error", "-y", "-i", str(vids[-1])]
+    if wav.exists():
+        # Audio usually starts first (the brain boots before the browser): trim its head; else delay it.
+        cmd += (["-ss", f"{-offset:.3f}"] if offset < 0 else ["-itsoffset", f"{offset:.3f}"]) + ["-i", str(wav), "-map", "0:v", "-map", "1:a", "-c:a", "aac", "-b:a", "128k"]
+    cmd += ["-c:v", "libx264", "-preset", "slow", "-crf", "30", "-pix_fmt", "yuv420p", "-movflags", "+faststart",
+            "-shortest", str(dest)]
+    subprocess.run(cmd, check=True)
+    print("video:", dest)
 
 
 sys.path.insert(0, str(ROOT))
