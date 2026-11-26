@@ -244,6 +244,9 @@ async def main() -> None:
         except subprocess.TimeoutExpired:
             proc.kill()
         black.unlink(missing_ok=True)
+        import shutil
+
+        shutil.rmtree(tmp, ignore_errors=True)  # raw browser video + audio; the muxed .mp4 is the output
 
 
 def mux(tmp: Path, video_started: float, dest: Path) -> None:

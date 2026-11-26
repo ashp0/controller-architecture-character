@@ -26,3 +26,6 @@ logs/
 
 # Downloaded models (scripts/download_models.py)
 models/
+
+# Demo recorder scratch (raw browser video/audio)
+docs/demo/.rec/
