@@ -158,7 +158,7 @@ measured by a guided protocol rather than claimed: `scripts/measure_engagement.p
 release rates, median reaction times and spurious flips with the production
 thresholds. On static test images the detector correctly separated frontal
 faces (head-yaw proxy −0.13) from a turned head (0.28 → not looking).
-ENGAGEMENT_RESULTS
+*Live results: to be added from the run on the demo laptop.*
 
 ## 7. Known limitations and what I left out
 
