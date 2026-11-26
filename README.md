@@ -21,6 +21,56 @@ It sees through the laptop camera, listens through the microphone, and speaks,
 plays sound effects and music through the speaker. The supplied URDF lamp is its
 body; motion and light are simulated and rendered in the browser.
 
+## Backstory
+
+This is not an ordinary lamp. This lamp orchestrates human society.
+
+Its light is where we are designed to look. Wherever the beam falls, that is
+what we see, what we talk about, what we accept as true. The darkness outside
+the beam is where no one is meant to step.
+
+> *Follow the others. Be comfortable. Accept wherever the light rests as the
+> truth. We built your world. You belong to our system. You will not leave it.*
+
+The idea grew out of something I noticed while growing up. The comparison to
+the Architect in *The Matrix* is deliberate: the more I lived, the more
+parallels I saw between that film and our world.
+
+In third grade, my friends and I would spend hours staring at trees, studying
+and admiring the shapes of their leaves. That habit seems to have vanished. The
+generation growing up now strikes me as strangely *mechanical*. They don't look
+at trees, or at the world, the way we did. Their world is the online world, and
+the one I grew up in seems to be quietly falling away beneath it.
+
+The contrast is sharpest when I listen to different generations talk. When
+older people recall their childhoods, their world sounds magical. Trees were
+almost like people. Nature, animals and humans were bound together, and
+everything held a kind of wonder. They believed in something greater than
+themselves. Many younger people never seem to ask *who made all this?* or
+*what is above us?* They are pacified instead, kept comfortable inside a
+digital world.
+
+And because that world is engineered, whoever controls it can decide what a
+generation thinks about and what it never notices. They decide where to shine
+the lamp. I'll leave you to guess who holds it.
+
+That is the character: the hidden hand that points the light. Its buried
+second voice is the part of us that still remembers the leaves, and keeps
+telling us to **wake up**.
+
+### How the backstory shapes the robot
+
+* **The beam is the metaphor.** The lamp's whole body is built around one
+  question: where should the light point? Asking it to "shine your light on…"
+  is literally asking it to direct attention, which is what the character
+  claims to do to society.
+* **Screens please it; nature unsettles it.** Show it your phone and it purrs
+  with satisfaction. Show it a leaf and it recoils.
+* **The lullaby.** The theme music is a slightly out-of-tune music-box lullaby:
+  comfort used as pacification.
+* **The second voice.** It breaks through the calm doctrine with *WAKE UP.*,
+  *WHERE DO YOU SPEND YOUR TIME?* and *BUILD YOUR OWN WORLD. DO NOT BUILD THEIRS.*
+
 ![The viewer](docs/media/viewer.png)
 
 *The viewer, shown with mock data. Left: the lamp on its pyramid. Right: what it
