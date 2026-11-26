@@ -10,6 +10,10 @@
   html,body { height:100%; background:var(--bg); color:var(--ink); font-family: Georgia, serif; overflow:hidden; }
   #stage { position:fixed; inset:0; transition: background .15s; }
   #stage.away { background:var(--red); }
+  #stage.rec { box-shadow: inset 0 0 0 6px var(--red); }
+  #rec { position:fixed; left:22px; top:18px; font:16px ui-monospace,Menlo,monospace; display:none; }
+  #rec::before { content:""; display:inline-block; width:12px; height:12px; border-radius:50%; background:var(--red); margin-right:8px; animation: blink 1s infinite; }
+  @keyframes blink { 50% { opacity:.2 } }
   #dot { position:absolute; width:34px; height:34px; margin:-17px 0 0 -17px; border-radius:50%;
          background:var(--gold); box-shadow:0 0 30px 8px rgba(232,182,90,.55); transition: left .5s, top .5s; display:none; }
   #dot::after { content:""; position:absolute; inset:13px; border-radius:50%; background:#fff; }
@@ -31,9 +35,10 @@
   <div id="dot"></div>
   <div id="big">
     <div id="title">ENGAGEMENT TEST</div>
-    <div id="sub">Sit where you will sit for the demo. Gold dot: follow it with your eyes and face.<br>Red screen: look away the way you were told.</div>
+    <div id="sub">Sit where you will sit for the demo. Gold dot: follow it with your eyes and face.<br>Red screen: look away the way you were told.<br><span style="font-size:.75em;opacity:.7">Video is recorded in the background for the demo. A few short demo clips follow at the end.</span></div>
     <button id="go">Start (Space)</button>
   </div>
+  <div id="rec">REC</div>
   <div id="hint">Esc stops the test</div>
   <div id="live"></div>
 </div>
@@ -59,8 +64,11 @@ function moveDot() {
   $('dot').style.left = x + 'vw'; $('dot').style.top = y + 'vh';
 }
 
+let mode = 'start';
 function show(m) {
   clearInterval(dotTimer);
+  mode = m.phase;
+  $('rec').style.display = (m.phase === 'look' || m.phase === 'away' || m.phase === 'rec') ? 'block' : 'none';
   phaseEnd = performance.now() + m.seconds * 1000; phaseLen = m.seconds * 1000;
   if (m.phase === 'look') {
     $('stage').className = ''; $('big').style.display = 'none'; $('dot').style.display = 'block';
@@ -72,6 +80,14 @@ function show(m) {
     $('sub').textContent = m.direction + '   (' + m.index + ' / ' + m.total + ')';
     $('go').style.display = 'none';
     beep(330, 0.35);
+  } else if (m.phase === 'pose') {
+    $('stage').className = ''; $('dot').style.display = 'none'; $('big').style.display = 'flex'; $('go').style.display = 'none';
+    $('title').textContent = m.title;
+    $('sub').innerHTML = `${m.how}<br><br><span style="font-size:.75em;opacity:.7">Demo clip ${m.index} of ${m.total} · press Space when ready${m.optional ? ' · S to skip' : ''}</span>`;
+    beep(660, 0.12);
+  } else if (m.phase === 'rec') {
+    $('stage').className = 'rec'; $('dot').style.display = 'none'; $('big').style.display = 'flex';
+    $('title').textContent = m.title; $('sub').textContent = m.how; beep(880, 0.15);
   } else if (m.phase === 'ready') {
     $('stage').className = ''; $('dot').style.display = 'none'; $('big').style.display = 'flex';
     $('title').textContent = 'GET READY'; $('sub').textContent = 'Look at the screen'; $('go').style.display = 'none';
@@ -79,7 +95,8 @@ function show(m) {
     $('stage').className = ''; $('dot').style.display = 'none'; $('big').style.display = 'flex';
     $('title').textContent = 'RESULTS'; $('go').style.display = 'none';
     $('sub').innerHTML = '<table>' + Object.entries(m.summary).map(([k, v]) =>
-      `<tr><td>${k.replaceAll('_', ' ')}</td><td>${v}</td></tr>`).join('') + '</table><p style="margin-top:14px;font-size:16px;opacity:.7">Saved to ' + m.saved + '. You can close this tab.</p>';
+      `<tr><td>${k.replaceAll('_', ' ')}</td><td>${v}</td></tr>`).join('') + '</table><p style="margin-top:14px;font-size:16px;opacity:.7">Saved to ' + m.saved +
+      (m.clips ? '. Video clips saved in ' + m.clips : '') + '. You can close this tab and go back to the chat.</p>';
     beep(660, 0.2); setTimeout(() => beep(990, 0.3), 220);
   }
 }
@@ -96,6 +113,7 @@ function connect() {
   ws.onmessage = e => {
     const m = JSON.parse(e.data);
     if (m.type === 'phase') show(m);
+    else if (m.type === 'count') { $('title').textContent = String(m.n); beep(520, 0.08); }
     else if (m.type === 'live') $('live').textContent =
       `faces ${m.faces}  looking ${m.looking ? 'yes' : 'no '}  score ${m.score.toFixed(2)}  ${m.engaged ? 'ENGAGED' : 'released'}`;
     else if (m.type === 'error') { $('title').textContent = 'CAMERA ERROR'; $('sub').textContent = m.text; }
@@ -111,6 +129,8 @@ function start() {
 }
 $('go').onclick = start;
 addEventListener('keydown', e => {
+  if (e.code === 'Space' && mode === 'pose') { e.preventDefault(); ws.send(JSON.stringify({ type: 'go' })); mode = 'count'; return; }
+  if (e.code === 'KeyS' && mode === 'pose') { ws.send(JSON.stringify({ type: 'skip' })); return; }
   if (e.code === 'Space' && $('go').style.display !== 'none') { e.preventDefault(); start(); }
   if (e.code === 'Escape') ws.send(JSON.stringify({ type: 'stop' }));
 });

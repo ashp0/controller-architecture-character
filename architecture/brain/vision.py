@@ -57,6 +57,11 @@ class Vision:
         self.lock = threading.Lock()
         self.fps = 0.0
         self.ok = False
+        self._switch: str | None = None
+
+    def switch(self, source: str) -> None:
+        """Change the camera source (demo recordings play clips as the camera)."""
+        self._switch = source
 
     def start(self) -> None:
         if self.enabled:
@@ -72,16 +77,25 @@ class Vision:
             cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
         return cap
 
-    def _run(self) -> None:
-        still = None
+    def _open_source(self):
         if isinstance(self.source, str) and self.source.lower().endswith((".jpg", ".jpeg", ".png", ".bmp")):
-            still = cv2.imread(self.source)  # a photo stands in for the camera (tests, demos)
-        cap = None if still is not None else self._open()
+            return cv2.imread(self.source), None  # a photo stands in for the camera (tests, demos)
+        return None, self._open()
+
+    def _run(self) -> None:
+        still, cap = self._open_source()
         warned = False
         det = None
         last_det = 0.0
         n, t0 = 0, time.monotonic()
         while True:
+            if self._switch is not None:
+                if cap is not None:
+                    cap.release()
+                self.source, self._switch = self._switch, None
+                still, cap = self._open_source()
+                self.att.score = 0.0 if self.att.faces == 0 else self.att.score
+                log.info("camera source: %s", self.source)
             if still is not None:
                 ok, frame = True, still.copy()
             else:

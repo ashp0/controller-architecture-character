@@ -394,6 +394,11 @@ class Brain:
                 m = await self.body.inbox.get()
                 if m.get("type") == "text" and m.get("text", "").strip():
                     await self._offer(m["text"].strip(), "typed", t_end=time.monotonic())
+                elif m.get("type") == "camera" and self.args.allow_camera_switch:
+                    src = Path(str(m.get("source", "")))
+                    if src.is_file():
+                        self.vision.switch(str(src))
+                        await self.event(f"camera: {src.name}")
                 elif m.get("type") == "ptt":
                     self.hearing.ptt = bool(m.get("down"))
                     if self.hearing.ptt:

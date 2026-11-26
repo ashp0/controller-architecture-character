@@ -40,6 +40,8 @@ def main() -> None:
     p.add_argument("--whisper", default=os.environ.get("WHISPER_MODEL", "base.en"), help="tiny.en | base.en | small.en")
     p.add_argument("--model", default=None, help="OpenCode Go model id (default: $LLM_MODEL or glm-5.3-flash)")
     p.add_argument("--keep-memory", action="store_true", help="load the Ledger from the previous run")
+    p.add_argument("--allow-camera-switch", action="store_true",
+                   help="let a viewer swap the camera for a local video file (used by scripts/record_demo.py)")
     p.add_argument("--host", default="127.0.0.1")
     p.add_argument("--port", type=int, default=8765)
     p.add_argument("--no-browser", action="store_true", help="don't open the viewer automatically")
