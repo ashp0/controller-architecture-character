@@ -38,7 +38,7 @@ SFX = {"ack", "glitch", "complete"}
 
 ENGAGE_SCORE = 0.6      # smoothed looking score needed to engage (~0.4 s of steady gaze)
 RELEASE_SCORE = 0.2     # below this, attention counts as elsewhere
-RELEASE_AFTER = 2.5     # seconds of attention elsewhere before disengaging
+RELEASE_AFTER = 2.0     # seconds of attention elsewhere before disengaging
 SLEEP_AFTER = 8.0       # seconds with no face before going dormant
 AIM_TOLERANCE = 0.09    # normalized image distance counted as "on target"
 

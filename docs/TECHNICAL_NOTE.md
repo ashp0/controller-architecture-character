@@ -158,7 +158,22 @@ measured by a guided protocol rather than claimed: `scripts/measure_engagement.p
 release rates, median reaction times and spurious flips with the production
 thresholds. On static test images the detector correctly separated frontal
 faces (head-yaw proxy −0.13) from a turned head (0.28 → not looking).
-First live run (MacBook camera, 10 trials, before tuning): engaged when looking **10/10** (median 1.0 s), released when looking away **3/10** (median 6.0 s), 5 spurious flips, detector 12.6 fps. Engagement is reliable; release is too sticky. Thresholds are being re-tuned from per-frame samples recorded by the guided on-screen protocol.
+Live runs on the MacBook camera (guided protocol: follow a dot around the screen /
+look away when the screen turns red; 8 s phases):
+
+| Run | Engaged when looking | Released when looking away | Median engage / release | False releases while looking |
+|---|---|---|---|---|
+| 1, initial thresholds (10 trials) | 10/10 | 3/10 | 1.0 s / 6.0 s | not recorded |
+| 2, initial thresholds (12 trials) | 12/12 | 5/12 (turn L/R 5/6, phone 0/3, up 0/3) | 1.1 s / 4.2 s | 1 |
+| 2 replayed with tuned thresholds | 12/12 | 10/12 (turn 6/6, phone 3/3, up 1/3) | n/a | 0 |
+
+Run 2 recorded every detector sample. Looking at the screen kept |yaw| below 0.12
+(p90) and pitch within 0.53–0.57; looking down at a phone pushed pitch to about
+0.67. Tightening the band (|yaw| < 0.18, 0.50 < pitch < 0.62) and shortening
+release to 2.0 s was chosen from these samples. Glancing *up* over the screen
+moves the eyes more than the head, so a head-pose detector mostly misses it.
+Eye tracking (for example iris landmarks) would be the fix. The tuned values
+come from one person and one seat; re-run the protocol on the demo machine.
 
 ## 7. Known limitations and what I left out
 

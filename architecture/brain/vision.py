@@ -22,6 +22,14 @@ import numpy as np
 
 log = logging.getLogger("vision")
 
+# "Looking at the screen" band, tuned from a recorded 12-trial session
+# (scripts/measure_engagement.py): while looking at dots across the screen,
+# |yaw| p90 = 0.12 and pitch p10-p90 = 0.53-0.57; turning away gives
+# |yaw| ~0.47, looking down at a phone gives pitch ~0.67.
+YAW_MAX = 0.18
+PITCH_MIN, PITCH_MAX = 0.50, 0.62
+MIN_FACE = 0.06  # face width / frame width (ignore people far in the background)
+
 
 @dataclass
 class Attention:
@@ -125,7 +133,7 @@ class Vision:
             yaw = float((nose[0] - eye_mid[0]) / eye_d)  # ~0 when facing camera
             pitch = float((nose[1] - eye_mid[1]) / (mouth[1] - eye_mid[1] + 1e-6))  # ~0.5..0.6 frontal
             size = float(w / W)
-            looking = abs(yaw) < 0.28 and 0.3 < pitch < 0.8 and size > 0.06
+            looking = abs(yaw) < YAW_MAX and PITCH_MIN < pitch < PITCH_MAX and size > MIN_FACE
             a.u, a.v = float((x + w / 2) / W), float((y + h * 0.4) / H)
             a.size, a.yaw, a.pitch = size, yaw, pitch
         a.faces = 0 if faces is None else len(faces)
