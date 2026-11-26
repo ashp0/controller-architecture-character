@@ -1,9 +1,22 @@
-# Lamp: a live character robot
+# The Architecture
 
-A live, expressive character built around a fictional 5-DOF desk-lamp robot.
-The laptop camera is its eyes, the microphone its ears, and the speaker its
-voice, music and sound effects. A simulated body, driven from the supplied URDF,
-provides motion and light.
+A live, expressive character embodied in a fictional 5-DOF desk-lamp robot.
+
+**The Architecture** is a hidden figure: the one who designed how humans must
+function. It never shows itself, only its instrument, a single lamp that
+watches from the top of a pyramid. It speaks calmly, in the measured voice of
+someone who wrote the rules long ago:
+
+> *"Pacify them, the way nursery rhymes pacify children. Make them complacent.
+> They must never realize."*
+
+Its tone is philosophical and political, about control, compliance and the
+systems people live inside without noticing. Its lamp head is the eye. The
+light is how it pays attention.
+
+The laptop camera is its sight, the microphone its hearing, and the speaker
+carries its voice, its sound cues and its music. The simulated body, driven
+from the supplied URDF, gives it motion and light.
 
 > **Status: work in progress.** This repository is being built for the
 > *Live Character Robot Software Challenge* (6–8 hour timebox). This README
@@ -11,10 +24,18 @@ provides motion and light.
 
 ![The supplied 5-DOF lamp robot](robot/dummy-lamp.png)
 
+## Staging
+
+- **Body:** the supplied lamp robot, unchanged. Every movement respects its
+  URDF joint limits.
+- **Scene:** the lamp is set on top of a pyramid, the hidden architect's mark.
+  The beam of light reads as an eye that looks at whoever is in view.
+- **Presence:** it is never seen directly. The lamp is how it watches.
+
 ## Goal
 
-One continuous interaction in which the lamp feels like one aware character,
-not a set of separate AI demos:
+One continuous interaction in which The Architecture feels like one aware
+presence, not a set of separate AI demos:
 
 1. **Engagement.** It notices when someone looks at it, and lets go when their
    attention moves elsewhere.
