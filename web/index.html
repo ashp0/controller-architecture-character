@@ -8,13 +8,29 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/web/style.css">
+  <script>
+    // If the 3D scene cannot start, say so on screen instead of showing an empty stage.
+    (function () {
+      function show(msg) {
+        var d = document.getElementById('fatal') || document.createElement('div');
+        d.id = 'fatal';
+        d.style.cssText = 'position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);max-width:560px;padding:16px 20px;' +
+          'background:#1a0705;border:1px solid #c4130c;color:#f3ead8;font:15px/1.5 ui-monospace,Menlo,monospace;z-index:99';
+        d.textContent = '3D view failed to load: ' + msg + '  (try a hard reload: Cmd+Shift+R; check that WebGL is enabled)';
+        document.body.appendChild(d);
+      }
+      window.addEventListener('error', function (e) { show(e.message || 'script error'); });
+      window.addEventListener('unhandledrejection', function (e) { show(String(e.reason && e.reason.message || e.reason)); });
+      try { var c = document.createElement('canvas'); if (!(c.getContext('webgl2') || c.getContext('webgl'))) window.addEventListener('DOMContentLoaded', function () { show('WebGL is not available in this browser'); }); } catch (e) {}
+    })();
+  </script>
   <script type="importmap">
   {
     "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-      "three/examples/jsm/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
-      "urdf-loader": "https://cdn.jsdelivr.net/npm/urdf-loader@0.12.3/src/URDFLoader.js"
+      "three": "/web/vendor/three/build/three.module.js",
+      "three/examples/jsm/": "/web/vendor/three/examples/jsm/",
+      "three/addons/": "/web/vendor/three/examples/jsm/",
+      "urdf-loader": "/web/vendor/urdf-loader/URDFLoader.js"
     }
   }
   </script>
