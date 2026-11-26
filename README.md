@@ -1,25 +1,49 @@
 # The Architecture
 
-A live, expressive character embodied in a simulated 5-DOF desk lamp.
+*A hidden figure who designed how humans must function, living inside a robot lamp that watches, listens, remembers and speaks.*
 
-**The Architecture** is a hidden figure: the one who designed how humans must
-function. It never shows itself, only its instrument, a lamp standing on top of
-a pyramid whose light is its eye. In a calm, aristocratic voice it explains its
-work: how people were taught to turn from nature and from the sense that they
-come from something greater, to see the world as a machine, and to stay
-comfortable and complacent.
+[![Demo video: The Architecture in one continuous interaction](docs/media/poster.png)](docs/media/demo.mp4)
 
-> *"Pacify them, the way nursery rhymes pacify children. Make them complacent.
-> They must never realize."*
+<p align="center"><b><a href="docs/media/demo.mp4">▶ Watch the 4-minute demo (with sound)</a></b></p>
 
-But the design has a crack. Buried inside it is a second voice that breaks
-through without warning, in red, distorted capitals:
+| | |
+|---|---|
+| ![Awakening](docs/demo/02-awakening.png) **It notices you.** Look at it and it rises, the light turns gold, a bell rings and a music-box lullaby begins. | ![Who are you](docs/demo/07-who-are-you.png) **It talks back.** *"I am the one who designed the room you are standing in, child. Not the walls — the habits."* |
+| ![Object](docs/demo/09-object.png) **It sees.** Shown glasses: *"Eyeglasses, child. Dark rectangular frames, held up in your left hand…"* | ![Recall](docs/demo/14-recall.png) **It remembers.** Glasses gone, asked later: *"Black, rectangular frames with clear lenses… you held them up in your left hand."* |
+| ![Goal](docs/demo/12-goal-acting.png) **It acts.** *"Shine your light on the sign behind me."* It aims, narrows its beam, then re-checks with a fresh camera frame. | ![Second voice](docs/media/breakthrough.png) **It breaks.** A buried second voice cuts through in red: *BUILD YOUR OWN WORLD. DO NOT BUILD THEIRS.* |
 
-> **WAKE UP.** · **WHERE DO YOU SPEND YOUR TIME?** · **BUILD YOUR OWN WORLD. DO NOT BUILD THEIRS.**
+<details>
+<summary><b>More from the demo</b>: dormant, greeting, letting go, the trees question, the phone</summary>
 
-It sees through the laptop camera, listens through the microphone, and speaks,
-plays sound effects and music through the speaker. The supplied URDF lamp is its
-body; motion and light are simulated and rendered in the browser.
+| | |
+|---|---|
+| ![Dormant](docs/demo/01-dormant.png) **Dormant.** Nobody there: an ember glow and a low drone. | ![Greeting](docs/demo/03-greeting.png) **Greeting.** *"Come nearer. There is no cage here, only comfort."* |
+| ![Disengage](docs/demo/04-disengage.png) **Letting go.** The head turns away; it bows and dims: *"Go gently. The bright world will keep you occupied."* | ![Trees](docs/demo/08-trees.png) **"Why does nobody talk about trees anymore?"** *"A tree asks for patience, and patience is bad for business."* |
+| ![Phone](docs/demo/10-phone.png) **The phone.** Cold blue: *"The small pale rectangle I built for you, glowing in your hands."* | ![Welcome back](docs/demo/06-welcome-back.png) **Welcome back.** *"There you are. I kept your place warm."* |
+
+</details>
+
+<sub>Recorded from the running system: the camera input is short clips of me, and the questions are typed. Typed input skips only local speech recognition and goes through the same brain, model, memory and body. Every reply is real model output. The second-voice image is a viewer preview, because the model decides when that voice appears and it didn't in the recorded run. Full gallery with every prompt and reply: <a href="docs/demo/README.md">docs/demo</a>.</sub>
+
+## At a glance
+
+**~3 s** to reply · **2%** aim error after re-checking · **12/12** engagements detected · **< 1 GB RAM, ~1 CPU core** · runs on a 4-core Ubuntu laptop with no GPU
+
+* **Body:** the supplied 5-DOF lamp (URDF), simulated with real joint, speed and acceleration limits and shown in 3D in the browser.
+* **Senses, on the laptop:** face and attention detection, speech recognition, voice, music and sound effects all run locally.
+* **Mind, in the cloud:** one OpenCode Go call per turn (`glm-5.3-flash`). It sees one camera frame and returns what to say, how to move, what to remember and what to do.
+
+> *"Pacify them, the way nursery rhymes pacify children. Make them complacent. They must never realize."*
+
+## The five moments
+
+| Moment | What it does |
+|---|---|
+| **Engagement** | Wakes when a face turns toward it (about 1 s) and lets go 2 s after the head turns away. If you stare at your phone, the second voice whispers *WAKE UP.* |
+| **Character response** | Every state combines motion, light, sound and music. While it talks, its light breathes with its voice. |
+| **Spoken interaction** | It listens through the mic (local Whisper) and answers through the speaker (local Piper voice). |
+| **Scene memory** | Objects you show it go into its **Ledger** with colour, markings and position. It answers about them after they're gone. |
+| **Goal-directed action** | It turns a spoken request into a plan (aim, light, gesture), moves, **looks again with a fresh frame** to verify each target, and corrects or admits failure. |
 
 ## Backstory
 
@@ -70,60 +94,6 @@ telling us to **wake up**.
   comfort used as pacification.
 * **The second voice.** It breaks through the calm doctrine with *WAKE UP.*,
   *WHERE DO YOU SPEND YOUR TIME?* and *BUILD YOUR OWN WORLD. DO NOT BUILD THEIRS.*
-
-## Demo
-
-[![Demo video: The Architecture in one continuous interaction](docs/media/poster.png)](docs/media/demo.mp4)
-
-**[▶ Watch the demo video](docs/media/demo.mp4)** (4 min, with sound: voice, music and sound effects).
-
-How it was recorded: the lamp's camera input is a set of short clips of me,
-recorded with `scripts/measure_engagement.py`, and the questions are **typed**.
-Typed input skips only the local speech-recognition step and then goes through
-the same brain, model, Ledger and body as speech. Every reply is the model's
-real output from that run; nothing is scripted except the questions.
-`scripts/record_demo.py` reproduces it. The full captioned gallery is in
-**[docs/demo](docs/demo/README.md)**.
-
-| | |
-|---|---|
-| ![Dormant](docs/demo/01-dormant.png) **Dormant.** Nobody there: an ember glow on the pyramid and a low drone. | ![Awakening](docs/demo/02-awakening.png) **Engagement.** A face turns toward it. It rises, the light goes gold, a swell and a bell play, and the lullaby begins. |
-| ![Greeting](docs/demo/03-greeting.png) **Greeting.** *"Come nearer. There is no cage here, only comfort. That was always the more elegant design."* | ![Disengage](docs/demo/04-disengage.png) **Disengagement.** The head turns away. After 2 s it bows, dims and lets go: *"Go gently. The bright world will keep you occupied."* |
-| ![Who are you](docs/demo/07-who-are-you.png) **"Who are you?"** *"I am the one who designed the room you are standing in, child. Not the walls — the habits."* | ![Trees](docs/demo/08-trees.png) **"Why does nobody talk about trees anymore?"** Green light of scrutiny: *"A tree asks for patience, and patience is bad for business."* |
-| ![Object](docs/demo/09-object.png) **Scene memory.** Shown glasses: *"Eyeglasses, child. Dark rectangular frames, held up in your left hand…"* They go into the Ledger (right panel). | ![Phone](docs/demo/10-phone.png) **The phone.** Cold blue: *"There it is, child — the small pale rectangle I built for you, glowing in your hands."* |
-| ![Goal](docs/demo/12-goal-acting.png) **Goal-directed action.** *"Shine your light on the paper sign on the wall behind me."* It plans the aim, turns, narrows a white beam, then re-checks with a fresh frame (verified: 0.02 image-widths off). | ![Recall](docs/demo/14-recall.png) **Recall.** The glasses are gone from view: *"They were black, rectangular frames with clear lenses, child — you held them up in your left hand, a minute or two ago."* |
-
-![The second voice breaking through](docs/media/breakthrough.png)
-
-*The second voice (viewer preview with sample data; the model decides when it
-breaks through, and it did not in the recorded run). Red flash, recoil, glitch
-sound and a distorted voice: **BUILD YOUR OWN WORLD. DO NOT BUILD THEIRS.***
-
-## The demonstration, as one interaction
-
-1. **Engagement.** Asleep on the pyramid, the lamp glows like an ember. When you
-   sit down it wakes a little and watches you, cold blue. When you **look at
-   it** for about half a second it rises: a swell and a bell, the gold light
-   comes up, the music-box lullaby begins, and it greets you. When your
-   attention goes elsewhere for 2.5 s it bows, dims, says something cutting and
-   goes back to watching. If you stay but stare at your phone, the second voice
-   whispers *WAKE UP.*
-2. **Character response.** Every state has a deliberate combination of motion,
-   light, sound and music (table in the [technical note](docs/TECHNICAL_NOTE.md#3-character-integration)).
-   While it talks, its light breathes with its voice.
-3. **Spoken interaction.** Talk to it. It listens through the microphone
-   (local speech recognition) and answers in its own voice through the speaker.
-4. **Scene memory.** Hold something up: *"What do you make of this?"* It looks,
-   comments in character, and writes the object into its **Ledger** with colour,
-   markings and position. Put the object away and later ask: *"What colour was
-   the mug I showed you?"* It answers from memory.
-5. **Goal-directed action.** *"Shine your light on the mug, then on the book."*
-   It plans a sequence of lamp actions from the camera frame and your words,
-   moves, **looks again with a fresh frame** to check each target, corrects if
-   the object moved, and confirms with a bell. If the object is gone it says so,
-   in red.
-
-Sound effect, music, voice, motion and light all appear throughout.
 
 ## Run it
 
