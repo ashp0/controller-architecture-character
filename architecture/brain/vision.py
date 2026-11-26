@@ -32,6 +32,7 @@ class Attention:
     v: float = 0.45
     size: float = 0.0  # face width / frame width
     yaw: float = 0.0
+    pitch: float = 0.0
     t: float = 0.0
 
 
@@ -126,7 +127,7 @@ class Vision:
             size = float(w / W)
             looking = abs(yaw) < 0.28 and 0.3 < pitch < 0.8 and size > 0.06
             a.u, a.v = float((x + w / 2) / W), float((y + h * 0.4) / H)
-            a.size, a.yaw = size, yaw
+            a.size, a.yaw, a.pitch = size, yaw, pitch
         a.faces = 0 if faces is None else len(faces)
         a.looking = looking
         # Exponential smoothing with ~0.4 s time constant: a glance is not engagement.

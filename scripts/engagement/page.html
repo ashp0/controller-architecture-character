@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Engagement Test</title>
+<style>
+  :root { --bg:#050505; --gold:#e8b65a; --ink:#f3ead8; --red:#c4130c; }
+  * { box-sizing:border-box; margin:0; }
+  html,body { height:100%; background:var(--bg); color:var(--ink); font-family: Georgia, serif; overflow:hidden; }
+  #stage { position:fixed; inset:0; transition: background .15s; }
+  #stage.away { background:var(--red); }
+  #dot { position:absolute; width:34px; height:34px; margin:-17px 0 0 -17px; border-radius:50%;
+         background:var(--gold); box-shadow:0 0 30px 8px rgba(232,182,90,.55); transition: left .5s, top .5s; display:none; }
+  #dot::after { content:""; position:absolute; inset:13px; border-radius:50%; background:#fff; }
+  #big { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; text-align:center; padding:16px; }
+  #title { font-size:clamp(40px,9vw,140px); letter-spacing:.08em; font-weight:700; }
+  #sub { font-size:clamp(18px,2.6vw,34px); opacity:.9; }
+  #hint { position:fixed; left:16px; bottom:14px; font: 13px/1.4 ui-monospace, Menlo, monospace; opacity:.55; }
+  #bar { position:fixed; left:0; top:0; height:6px; background:rgba(255,255,255,.75); width:0; }
+  #live { position:fixed; right:16px; bottom:14px; font: 13px/1.4 ui-monospace, Menlo, monospace; opacity:.55; text-align:right; }
+  table { border-collapse:collapse; font-size:20px; margin-top:10px; }
+  td { padding:6px 18px; border-bottom:1px solid rgba(255,255,255,.15); text-align:left; }
+  td:last-child { color:var(--gold); text-align:right; }
+  button { font: inherit; font-size:22px; padding:12px 28px; background:transparent; color:var(--gold); border:1px solid var(--gold); cursor:pointer; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bar"></div>
+  <div id="dot"></div>
+  <div id="big">
+    <div id="title">ENGAGEMENT TEST</div>
+    <div id="sub">Sit where you will sit for the demo. Gold dot: follow it with your eyes and face.<br>Red screen: look away the way you were told.</div>
+    <button id="go">Start (Space)</button>
+  </div>
+  <div id="hint">Esc stops the test</div>
+  <div id="live"></div>
+</div>
+<script>
+const $ = id => document.getElementById(id);
+let ws, audio, phaseEnd = 0, phaseLen = 1, dotTimer = null;
+const spots = [[50,50],[18,20],[82,20],[82,80],[18,80],[50,22],[50,78]];
+
+function beep(freq, dur) {
+  try {
+    audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+    const o = audio.createOscillator(), g = audio.createGain();
+    o.frequency.value = freq; o.connect(g); g.connect(audio.destination);
+    g.gain.setValueAtTime(0.0001, audio.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.25, audio.currentTime + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + dur);
+    o.start(); o.stop(audio.currentTime + dur + 0.05);
+  } catch (e) {}
+}
+
+function moveDot() {
+  const [x, y] = spots[Math.floor(Math.random() * spots.length)];
+  $('dot').style.left = x + 'vw'; $('dot').style.top = y + 'vh';
+}
+
+function show(m) {
+  clearInterval(dotTimer);
+  phaseEnd = performance.now() + m.seconds * 1000; phaseLen = m.seconds * 1000;
+  if (m.phase === 'look') {
+    $('stage').className = ''; $('big').style.display = 'none'; $('dot').style.display = 'block';
+    moveDot(); dotTimer = setInterval(moveDot, 2000);
+    beep(880, 0.15);
+  } else if (m.phase === 'away') {
+    $('stage').className = 'away'; $('dot').style.display = 'none'; $('big').style.display = 'flex';
+    $('title').textContent = 'LOOK AWAY';
+    $('sub').textContent = m.direction + '   (' + m.index + ' / ' + m.total + ')';
+    $('go').style.display = 'none';
+    beep(330, 0.35);
+  } else if (m.phase === 'ready') {
+    $('stage').className = ''; $('dot').style.display = 'none'; $('big').style.display = 'flex';
+    $('title').textContent = 'GET READY'; $('sub').textContent = 'Look at the screen'; $('go').style.display = 'none';
+  } else if (m.phase === 'done') {
+    $('stage').className = ''; $('dot').style.display = 'none'; $('big').style.display = 'flex';
+    $('title').textContent = 'RESULTS'; $('go').style.display = 'none';
+    $('sub').innerHTML = '<table>' + Object.entries(m.summary).map(([k, v]) =>
+      `<tr><td>${k.replaceAll('_', ' ')}</td><td>${v}</td></tr>`).join('') + '</table><p style="margin-top:14px;font-size:16px;opacity:.7">Saved to ' + m.saved + '. You can close this tab.</p>';
+    beep(660, 0.2); setTimeout(() => beep(990, 0.3), 220);
+  }
+}
+
+function tick() {
+  const left = Math.max(0, phaseEnd - performance.now());
+  $('bar').style.width = (100 * (1 - left / phaseLen)) + '%';
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+function connect() {
+  ws = new WebSocket(`ws://${location.host}/ws`);
+  ws.onmessage = e => {
+    const m = JSON.parse(e.data);
+    if (m.type === 'phase') show(m);
+    else if (m.type === 'live') $('live').textContent =
+      `faces ${m.faces}  looking ${m.looking ? 'yes' : 'no '}  score ${m.score.toFixed(2)}  ${m.engaged ? 'ENGAGED' : 'released'}`;
+    else if (m.type === 'error') { $('title').textContent = 'CAMERA ERROR'; $('sub').textContent = m.text; }
+  };
+  ws.onclose = () => setTimeout(connect, 1000);
+}
+connect();
+
+function start() {
+  beep(440, 0.05);  // unlock audio with the user gesture
+  try { document.documentElement.requestFullscreen(); } catch (e) {}
+  ws.send(JSON.stringify({ type: 'start' }));
+}
+$('go').onclick = start;
+addEventListener('keydown', e => {
+  if (e.code === 'Space' && $('go').style.display !== 'none') { e.preventDefault(); start(); }
+  if (e.code === 'Escape') ws.send(JSON.stringify({ type: 'stop' }));
+});
+</script>
+</body>
+</html>

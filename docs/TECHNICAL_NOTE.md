@@ -158,7 +158,7 @@ measured by a guided protocol rather than claimed: `scripts/measure_engagement.p
 release rates, median reaction times and spurious flips with the production
 thresholds. On static test images the detector correctly separated frontal
 faces (head-yaw proxy −0.13) from a turned head (0.28 → not looking).
-*Live results: to be added from the run on the demo laptop.*
+First live run (MacBook camera, 10 trials, before tuning): engaged when looking **10/10** (median 1.0 s), released when looking away **3/10** (median 6.0 s), 5 spurious flips, detector 12.6 fps. Engagement is reliable; release is too sticky. Thresholds are being re-tuned from per-frame samples recorded by the guided on-screen protocol.
 
 ## 7. Known limitations and what I left out
 
