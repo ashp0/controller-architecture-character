@@ -486,7 +486,13 @@ function applyState(msg) {
 }
 
 // ---------------------------------------------------------------- post fx
-const composer = new EffectComposer(renderer);
+const DEBUG = new URLSearchParams(location.search);
+// WebKit (Safari) mis-renders the composer's default half-float targets: the
+// scene shows up as a few stray lines. 8-bit targets work everywhere.
+const composerTarget = new THREE.WebGLRenderTarget(
+  Math.max(1, window.innerWidth * renderer.getPixelRatio()), Math.max(1, window.innerHeight * renderer.getPixelRatio()),
+  { type: DEBUG.has('halffloat') ? THREE.HalfFloatType : THREE.UnsignedByteType });
+const composer = new EffectComposer(renderer, composerTarget);
 composer.addPass(new RenderPass(scene, camera));
 const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.42, 0.55, 0.86);
 composer.addPass(bloom);
@@ -498,6 +504,7 @@ let viewShift = 0;
 let viewShiftTarget = 0;
 function updateViewOffset() {
   const w = window.innerWidth, h = window.innerHeight;
+  if (DEBUG.has('noshift')) { camera.clearViewOffset(); return; }
   if (Math.abs(viewShift) < 0.5) camera.clearViewOffset();
   else camera.setViewOffset(w, h, viewShift, 0, w, h);
 }
@@ -552,7 +559,7 @@ function frame() {
   updateViewOffset();
 
   controls.update();
-  composer.render();
+  if (DEBUG.has('nobloom')) renderer.render(scene, camera); else composer.render();
   requestAnimationFrame(frame);
 }
 
