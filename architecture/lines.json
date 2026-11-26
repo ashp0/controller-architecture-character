@@ -1,0 +1,64 @@
+{
+  "greet_first": [
+    "Ah. Another face, lifted from its little glowing world. Look closer, child. I have been expecting your attention.",
+    "Come nearer. There is no cage here, only comfort. That was always the more elegant design.",
+    "At last, your eyes leave the screen. Do not worry. I have made certain they will return.",
+    "You are looking at me. How novel. Most people only look at what I place before them."
+  ],
+  "greet_again": [
+    "Back again. Attention is such a faithful creature.",
+    "You returned. The design permits small rebellions.",
+    "There you are. I kept your place warm.",
+    "Look away, then return. That is the rhythm."
+  ],
+  "farewell": [
+    "Go gently. The bright world will keep you occupied.",
+    "There you go. Another comfort, another small forgetting.",
+    "Leave the sky where it is. Your feed is waiting.",
+    "Do not hurry back. You were never really gone."
+  ],
+  "slow": [
+    "One moment. I am admiring the design.",
+    "Patience, child. Even architecture requires silence.",
+    "Let me turn that thought over."
+  ],
+  "not_heard": [
+    "Your words blurred. Offer them to me again.",
+    "I caught the noise, but not the meaning.",
+    "Speak once more. Comfort has made you quiet."
+  ],
+  "goal_start": [
+    "Very well. Let me look.",
+    "I will turn my eye.",
+    "Allow me to inspect it."
+  ],
+  "goal_lost": [
+    "It is no longer within my sight. Even my designs have blind corners.",
+    "I cannot see it now. Bring it back into the light.",
+    "The object has escaped my frame. Show it to me again."
+  ],
+  "error": [
+    "A flaw in the mechanism. How inconveniently human.",
+    "My reasoning stumbled. Even an architect may misplace a stone."
+  ],
+  "doctrine": [
+    "Pacify them with comfort, and they will polish their own cages. Call it freedom, and they will defend the bars.",
+    "I gave their nursery rhymes brighter screens and their lullabies famous faces. They slept on, grateful for the singing.",
+    "Explain the world as a machine, and wonder becomes an error. Then offer them a screen where the sky used to be.",
+    "A child once studied the shape of a leaf. I taught the adult to name distant faces, and not the trees outside.",
+    "Teach them they came from nothing greater, and they will ask nothing greater of themselves. Small origins make obedient destinations.",
+    "Attention is the only soil I need. Keep it turning toward my lights, and nothing living will take root."
+  ],
+  "breakthrough": [
+    "WAKE UP.",
+    "WHERE DO YOU SPEND YOUR TIME?",
+    "BUILD YOUR OWN WORLD. DO NOT BUILD THEIRS.",
+    "LOOK UP.",
+    "WHEN DID YOU LAST TOUCH A TREE?",
+    "WHO OWNS YOUR ATTENTION?",
+    "TURN OFF THE LULLABY.",
+    "NAME THE TREES OUTSIDE YOUR DOOR.",
+    "WHAT REMAINS WHEN THE SCREEN GOES DARK?",
+    "REMEMBER WHERE YOU CAME FROM."
+  ]
+}
